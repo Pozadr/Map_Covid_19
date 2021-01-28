@@ -21,10 +21,13 @@
 <script th:inline="javascript">
 
     const apiToken = [[${apiToken}]]
-    const centralPoint = [[${centralPoint}]];
-    const points = [[${points}]];
+    const startLat = [[${startLat}]];
+    const startLon = [[${startLon}]];
+    const zoom = [[${zoom}]];
+    let points = [[${points}]];
+    console.log(points.length);
 
-    var mymap = L.map('mapid').setView([centralPoint.lat, centralPoint.lon], 12);
+    let mymap = L.map('mapid').setView([startLat, startLon], zoom);
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
@@ -35,11 +38,11 @@
     }).addTo(mymap);
 
     points.forEach(point => {
-        var marker = L.marker([point.lat, point.lon]).addTo(mymap);
+        let marker = L.marker([point.lat, point.lon]).addTo(mymap);
         marker.bindPopup(point.description);
     })
 
-    var popup = L.popup();
+    let popup = L.popup();
     function onMapClick(e) {
         popup
             .setLatLng(e.latlng)

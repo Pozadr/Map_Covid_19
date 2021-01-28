@@ -24,11 +24,16 @@ public class MapController {
 
     @GetMapping("/map")
     public String getMap(Model model) {
-        Point centralPoint = new Point(54.35340380739709, 18.64126860060682, "Gdańsk");
-        List<Point> points = mapService.fetchData();
+        Double startLat = 52.26077325101084;
+        Double startLon = 21.065969374131218;
+        Integer zoom = 4;
+        List<Point> points = mapService.getPoints();
+        System.out.println(points.size());
 
         model.addAttribute("apiToken", apiToken);
-        model.addAttribute("centralPoint", centralPoint);
+        model.addAttribute("startLat", startLat);
+        model.addAttribute("startLon", startLon);
+        model.addAttribute("zoom", zoom);
         model.addAttribute("points", points);
         return "map";
     }
