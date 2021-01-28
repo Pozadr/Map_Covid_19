@@ -1,8 +1,13 @@
 package pl.pozadr.map.model;
 
+import com.opencsv.bean.CsvBindByName;
+
 public class Point {
+    @CsvBindByName(column = "Latitude")
     private Double lat;
+    @CsvBindByName(column = "Longitude")
     private Double lon;
+    @CsvBindByName(column = "Description")
     private String description;
 
     public Point() {
@@ -36,5 +41,14 @@ public class Point {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Point{" +
+                "lat=" + lat +
+                ", lon=" + lon +
+                ", description='" + description + '\'' +
+                '}';
     }
 }
