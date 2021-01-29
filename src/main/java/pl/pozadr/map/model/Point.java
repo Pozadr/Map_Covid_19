@@ -8,9 +8,9 @@ public class Point {
     @CsvBindByName(column = "Long_")
     private Double lon;
     @CsvBindByName(column = "Country_Region")
-    private String countryRegion;
+    private String country;
     @CsvBindByName(column = "Combined_Key")
-    private String combinedKey;
+    private String region;
     @CsvBindByName(column = "Confirmed")
     private Integer confirmed;
     @CsvBindByName(column = "Deaths")
@@ -46,20 +46,20 @@ public class Point {
         this.lon = lon;
     }
 
-    public String getCountryRegion() {
-        return countryRegion;
+    public String getCountry() {
+        return country;
     }
 
-    public void setCountryRegion(String countryRegion) {
-        this.countryRegion = countryRegion;
+    public void setCountry(String country) {
+        this.country = country;
     }
 
-    public String getCombinedKey() {
-        return combinedKey;
+    public String getRegion() {
+        return region;
     }
 
-    public void setCombinedKey(String combinedKey) {
-        this.combinedKey = combinedKey;
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     public Integer getConfirmed() {
@@ -121,8 +121,8 @@ public class Point {
     @Override
     public String toString() {
         return "Point{" +
-                "Country='" + countryRegion + '\'' +
-                "Region='" + combinedKey + '\'' +
+                "Country='" + country + '\'' +
+                "Region='" + region + '\'' +
                 ", lat=" + lat +
                 ", lon=" + lon +
                 ", description='" + description + '\'' +

@@ -27,7 +27,7 @@ public class MapController {
         Double startLat = 52.26077325101084;
         Double startLon = 21.065969374131218;
         Integer zoom = 4;
-        List<Point> points = mapService.getPoints();
+        List<Point> points = mapService.getPointsByCountry("united kingdom");
         System.out.println(points.size());
 
         model.addAttribute("apiToken", apiToken);

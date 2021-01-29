@@ -13,6 +13,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MapService {
@@ -25,10 +26,34 @@ public class MapService {
         return points;
     }
 
+    public List<Point> getPointsByCountry(String country) {
+        return points.stream()
+                .filter(point -> point.getCountry().equalsIgnoreCase(country))
+                .collect(Collectors.toList());
+    }
+
+
+
     @EventListener(ApplicationReadyEvent.class)
     public void initApplication() {
         points = fetchData();
-        //points.forEach(point -> System.out.println(point.getDescription() + "\n"));
+
+        // TEST
+        /*
+        points.forEach(point -> {
+            System.out.println(point.getCountry() + "\n");
+            System.out.println("Lat:" + point.getLat() + "\n");
+            System.out.println("Lon:" + point.getLon() + "\n");
+        });
+
+
+        points.forEach(point -> {
+            System.out.println(point.getDescription() + "\n");
+        });
+
+         */
+
+
     }
 
 
@@ -46,8 +71,8 @@ public class MapService {
                 points = csvToBean.parse();
                 reader.close();
             }
-            filterData(points);
-            return points;
+            List<Point> filteredPoints = filterData(points);
+            return filteredPoints;
         } catch (RestClientException ex) {
             ex.getMessage();
         }
@@ -55,8 +80,12 @@ public class MapService {
     }
 
     private List<Point> filterData(List<Point> points) {
-        points.forEach(point -> point.setDescription(preparePointDescription(point)));
-        return points;
+        List<Point> pointsWithoutNullLenLon = points.stream()
+                .filter(point -> point.getLat() != null)
+                .filter(point -> point.getLon() != null)
+                .collect(Collectors.toList());
+        pointsWithoutNullLenLon.forEach(point -> point.setDescription(preparePointDescription(point)));
+        return pointsWithoutNullLenLon;
     }
 
     private String preparePointDescription(Point point) {
@@ -65,15 +94,16 @@ public class MapService {
         double caseFatalityRatio = (point.getCaseFatalityRatio() == null) ? 0.0
                 : Math.round(point.getCaseFatalityRatio() * 100.0) / 100.0;
 
-        return "Country: " + point.getCountryRegion() + "<br>" +
-                "Region: " + point.getCombinedKey() + "<br>" +
-                "Confirmed: " + point.getConfirmed() + "<br>" +
-                "Deaths: " + point.getDeaths() + "<br>" +
-                "Recovered: " + point.getRecovered() + "<br>" +
-                "Deaths: " + point.getDeaths() + "<br>" +
-                "Active: " + point.getActive() + "<br>" +
-                "Incident rate: " + incidentRate + "<br>" +
-                "Case fatality ratio: " + caseFatalityRatio;
+        StringBuilder descriptionSb = new StringBuilder();
+        descriptionSb.append("Country: ").append(point.getCountry()).append("<br>");
+        descriptionSb.append("Region: ").append(point.getRegion()).append("<br>");
+        descriptionSb.append("Confirmed: ").append(point.getConfirmed()).append("<br>");
+        descriptionSb.append("Active: ").append(point.getActive()).append("<br>");
+        descriptionSb.append("Recovered: ").append(point.getRecovered()).append("<br>");
+        descriptionSb.append("Deaths: ").append(point.getDeaths()).append("<br>");
+        descriptionSb.append("Incident rate: ").append(incidentRate).append("<br>");
+        descriptionSb.append("Case fatality ratio: ").append(caseFatalityRatio);
+        return  descriptionSb.toString();
     }
 
 
