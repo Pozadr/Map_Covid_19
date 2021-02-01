@@ -2,12 +2,14 @@ package pl.pozadr.map.service;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import pl.pozadr.map.model.Point;
+import pl.pozadr.map.reposiotry.CapitalsEuropeRepo;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -17,10 +19,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class MapService {
+    private CapitalsEuropeRepo capitalsEuropeRepo;
     private List<Point> points;
     private static final String URL =
             "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/01-26-2021.csv";
 
+    @Autowired
+    public MapService(CapitalsEuropeRepo capitalsEuropeRepo) {
+        this.capitalsEuropeRepo = capitalsEuropeRepo;
+    }
 
     public List<Point> getPoints() {
         return points;
@@ -32,6 +39,13 @@ public class MapService {
                 .collect(Collectors.toList());
     }
 
+    public List<Point> getPointsEurope() {
+        List<String> euCountries = capitalsEuropeRepo.getEuropeanCapitals();
+        return points.stream()
+                .filter(point -> euCountries.stream()
+                        .anyMatch(country -> country.equalsIgnoreCase(point.getCountry())))
+                .collect(Collectors.toList());
+    }
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -40,6 +54,15 @@ public class MapService {
 
         // TEST
         /*
+        List<Point> common = getPointsEurope();
+
+        System.out.println("TEST");
+        System.out.println("points size: " + points.size());
+        System.out.println("common size: " + common.size());
+        common.forEach(point -> {
+            System.out.println(point.getCountry() + "\n");
+        });
+
         points.forEach(point -> {
             System.out.println(point.getCountry() + "\n");
             System.out.println("Lat:" + point.getLat() + "\n");
@@ -103,9 +126,8 @@ public class MapService {
         descriptionSb.append("Deaths: ").append(point.getDeaths()).append("<br>");
         descriptionSb.append("Incident rate: ").append(incidentRate).append("<br>");
         descriptionSb.append("Case fatality ratio: ").append(caseFatalityRatio);
-        return  descriptionSb.toString();
+        return descriptionSb.toString();
     }
-
 
 
 }
