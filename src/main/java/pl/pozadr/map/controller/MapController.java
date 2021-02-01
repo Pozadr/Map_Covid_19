@@ -29,7 +29,6 @@ public class MapController {
         Integer zoom = 4;
        // List<Point> points = mapService.getPointsByCountry("us");
         List<Point> points = mapService.getPointsEurope();
-        System.out.println(points.size());
 
         model.addAttribute("apiToken", apiToken);
         model.addAttribute("startLat", startLat);
