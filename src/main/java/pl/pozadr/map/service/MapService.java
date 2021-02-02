@@ -2,55 +2,71 @@ package pl.pozadr.map.service;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import pl.pozadr.map.api.DataFetcher;
 import pl.pozadr.map.model.Point;
 import pl.pozadr.map.reposiotry.CapitalsEuropeRepo;
 
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class MapService {
-    private CapitalsEuropeRepo capitalsEuropeRepo;
-    private List<Point> points;
-    private static final String URL =
-            "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/01-26-2021.csv";
+    Logger logger = LoggerFactory.getLogger(MapService.class);
+    private final CapitalsEuropeRepo capitalsEuropeRepo;
+    private final DataFetcher dataFetcher;
+    private List<Point> remoteApiPoints;
+    private List<Point> resultPoints;
+
 
     @Autowired
-    public MapService(CapitalsEuropeRepo capitalsEuropeRepo) {
+    public MapService(CapitalsEuropeRepo capitalsEuropeRepo, DataFetcher dataFetcher) {
         this.capitalsEuropeRepo = capitalsEuropeRepo;
+        this.dataFetcher = dataFetcher;
     }
 
     public List<Point> getPoints() {
-        return points;
+        return resultPoints;
     }
 
-    public List<Point> getPointsByCountry(String country) {
-        return points.stream()
-                .filter(point -> point.getCountry().equalsIgnoreCase(country))
+    public void filterPointsByCountry(String country) {
+        String validatedCountry = validateCountry(country);
+        resultPoints = remoteApiPoints.stream()
+                .filter(point -> point.getCountry().equalsIgnoreCase(validatedCountry))
                 .collect(Collectors.toList());
     }
 
-    public List<Point> getPointsEurope() {
+    public void filterPointsEurope() {
         List<String> euCountries = capitalsEuropeRepo.getEuropeanCapitals();
-        return points.stream()
+        resultPoints = remoteApiPoints.stream()
                 .filter(point -> euCountries.stream()
                         .anyMatch(country -> country.equalsIgnoreCase(point.getCountry())))
                 .collect(Collectors.toList());
     }
 
+    @Scheduled(fixedDelay = 86400000) // 86400000 ms = 24 h
+    private void updateData() {
+        Optional<String> dataOpt = dataFetcher.getDataFromRemoteApi();
+        if (dataOpt.isPresent()) {
+            try {
+                List<Point> points = csvToBeanParser(dataOpt.get());
+                remoteApiPoints = filterData(points);
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void initApplication() {
-        points = fetchData();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                logger.info(LocalDateTime.now().format(formatter) + " | Data updated.");
+            } catch (IllegalStateException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
 
         // TEST
         /*
@@ -73,33 +89,18 @@ public class MapService {
         points.forEach(point -> {
             System.out.println(point.getDescription() + "\n");
         });
-
          */
-
-
     }
 
-
-    private List<Point> fetchData() {
-        RestTemplate restTemplate = new RestTemplate();
-        List<Point> points = new ArrayList<>();
-        try {
-            Optional<String> dataOpt = Optional.ofNullable(restTemplate.getForObject(URL, String.class));
-            if (dataOpt.isPresent()) {
-                StringReader reader = new StringReader(dataOpt.get());
-                CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
-                        .withType(Point.class)
-                        .withIgnoreLeadingWhiteSpace(true)
-                        .build();
-                points = csvToBean.parse();
-                reader.close();
-            }
-            List<Point> filteredPoints = filterData(points);
-            return filteredPoints;
-        } catch (RestClientException ex) {
-            ex.getMessage();
-        }
-        return new ArrayList<>();
+    private List<Point> csvToBeanParser(String dataCsv) throws IllegalStateException {
+        StringReader reader = new StringReader(dataCsv);
+        CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
+                .withType(Point.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        List<Point> points = csvToBean.parse();
+        reader.close();
+        return points;
     }
 
     private List<Point> filterData(List<Point> points) {
@@ -109,6 +110,13 @@ public class MapService {
                 .collect(Collectors.toList());
         pointsWithoutNullLenLon.forEach(point -> point.setDescription(preparePointDescription(point)));
         return pointsWithoutNullLenLon;
+    }
+
+    private String validateCountry(String country) {
+        if (country.equalsIgnoreCase("United States")) {
+            return "us";
+        }
+        return country;
     }
 
     private String preparePointDescription(Point point) {
