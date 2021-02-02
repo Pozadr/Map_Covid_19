@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.pozadr.map.api.DataFetcher;
+import pl.pozadr.map.dto.MapDto;
 import pl.pozadr.map.model.Point;
 import pl.pozadr.map.reposiotry.CapitalsEuropeRepo;
 
 import java.io.StringReader;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -25,32 +25,51 @@ public class MapService {
     private final CapitalsEuropeRepo capitalsEuropeRepo;
     private final DataFetcher dataFetcher;
     private List<Point> remoteApiPoints;
-    private List<Point> resultPoints;
+    private final MapDto mapDto;
 
 
     @Autowired
     public MapService(CapitalsEuropeRepo capitalsEuropeRepo, DataFetcher dataFetcher) {
         this.capitalsEuropeRepo = capitalsEuropeRepo;
         this.dataFetcher = dataFetcher;
+        this.mapDto = new MapDto();
     }
 
     public List<Point> getPoints() {
-        return resultPoints;
+        return mapDto.getPoints();
     }
 
     public void filterPointsByCountry(String country) {
+        Double startLat = 52.26077325101084;
+        Double startLon = 21.065969374131218;
+        Integer zoom = 4;
         String validatedCountry = validateCountry(country);
-        resultPoints = remoteApiPoints.stream()
+
+        List<Point> filteredPoints = remoteApiPoints.stream()
                 .filter(point -> point.getCountry().equalsIgnoreCase(validatedCountry))
                 .collect(Collectors.toList());
+
+        mapDto.setPoints(filteredPoints);
+        mapDto.setStartLat(startLat);
+        mapDto.setStartLon(startLon);
+        mapDto.setZoom(zoom);
     }
 
     public void filterPointsEurope() {
+        Double startLat = 52.26077325101084;
+        Double startLon = 21.065969374131218;
+        Integer zoom = 4;
         List<String> euCountries = capitalsEuropeRepo.getEuropeanCapitals();
-        resultPoints = remoteApiPoints.stream()
+
+        List<Point> filteredPoints = remoteApiPoints.stream()
                 .filter(point -> euCountries.stream()
                         .anyMatch(country -> country.equalsIgnoreCase(point.getCountry())))
                 .collect(Collectors.toList());
+
+        mapDto.setPoints(filteredPoints);
+        mapDto.setStartLat(startLat);
+        mapDto.setStartLon(startLon);
+        mapDto.setZoom(zoom);
     }
 
     @Scheduled(fixedDelay = 86400000) // 86400000 ms = 24 h
@@ -136,6 +155,4 @@ public class MapService {
         descriptionSb.append("Case fatality ratio: ").append(caseFatalityRatio);
         return descriptionSb.toString();
     }
-
-
 }
