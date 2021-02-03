@@ -2,6 +2,8 @@ package pl.pozadr.map.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +26,12 @@ public class MapController {
         this.mapService = mapService;
     }
 
-    @GetMapping("/covid-19-map")
-    public String getEuropeMap() {
-        mapService.filterPointsEurope();
-        return "redirect:/map";
+    @GetMapping("/map")
+    public String initApplication() {
+        return getEuropeMap();
     }
 
-    @GetMapping("/map")
+    @GetMapping("/show-map")
     public String getMap(Model model) {
         MapDto mapDto = mapService.getMapDto();
         List<Point> points = mapDto.getPoints();
@@ -46,10 +47,16 @@ public class MapController {
         return "map";
     }
 
+    @GetMapping("/map-europe")
+    public String getEuropeMap() {
+        mapService.filterPointsEurope();
+        return "redirect:/show-map";
+    }
+
     @GetMapping("/get-map-by-country")
     public String getMapByCountry(@RequestParam String country) {
         mapService.filterPointsByCountry(country);
-        return "redirect:/map";
+        return "redirect:/show-map";
     }
 
 

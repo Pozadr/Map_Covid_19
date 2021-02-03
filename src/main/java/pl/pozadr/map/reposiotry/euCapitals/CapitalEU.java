@@ -1,4 +1,4 @@
-package pl.pozadr.map.reposiotry;
+package pl.pozadr.map.reposiotry.euCapitals;
 
 public enum CapitalEU {
     AUSTRIA,
