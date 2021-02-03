@@ -13,9 +13,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Component
-public class DataFetcherImpl implements DataFetcher{
+public class DataFetcherImpl implements DataFetcher, HistoricDataFetcher {
     Logger logger = LoggerFactory.getLogger(DataFetcherImpl.class);
-    private static final String BASE_URL =
+    private static final String DAILY_DATA_BASE_URL =
             "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
 
     @Override
@@ -34,11 +34,26 @@ public class DataFetcherImpl implements DataFetcher{
         return Optional.empty();
     }
 
+    @Override
+    public Optional<String> getHistoricData(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            return fetchData(url);
+        } catch (MalformedURLException exUrl) {
+            System.out.println(exUrl.getMessage());
+            logger.error("Error during building URL.", exUrl);
+        } catch (RestClientException exRestClient) {
+            exRestClient.getMessage();
+            logger.error("Error during fetching data from remote API.");
+        }
+        return Optional.empty();
+    }
+
     private URL prepareUrl(Integer daysBack) throws MalformedURLException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
         LocalDate today = LocalDate.now();
         LocalDate pastDay = today.minusDays(daysBack);
-        URL url = new URL(BASE_URL + pastDay.format(formatter) + ".csv");
+        URL url = new URL(DAILY_DATA_BASE_URL + pastDay.format(formatter) + ".csv");
         return url;
     }
 

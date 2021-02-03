@@ -2,15 +2,15 @@ package pl.pozadr.map.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import pl.pozadr.map.dto.MapDto;
+import pl.pozadr.map.model.CovidHistory;
 import pl.pozadr.map.model.Point;
-import pl.pozadr.map.service.MapService;
+import pl.pozadr.map.service.CovidHistoryService;
+import pl.pozadr.map.service.CovidMapService;
 
 import java.util.List;
 
@@ -19,21 +19,30 @@ public class MapController {
 
     @Value("${api-token}")
     private String apiToken;
-    private final MapService mapService;
+    private final CovidMapService covidMapService;
+    private final CovidHistoryService covidHistoryService;
 
     @Autowired
-    public MapController(MapService mapService) {
-        this.mapService = mapService;
+    public MapController(CovidMapService covidMapService, CovidHistoryService covidHistoryService) {
+        this.covidMapService = covidMapService;
+        this.covidHistoryService = covidHistoryService;
     }
+
 
     @GetMapping("/map")
     public String initApplication() {
         return getEuropeMap();
     }
 
+    //@EventListener(ApplicationReadyEvent.class)
+    public void getHistory() {
+        CovidHistory covidHistory = covidHistoryService.getHistory("Poland");
+        System.out.println(covidHistory.toString());
+    }
+
     @GetMapping("/show-map")
     public String getMap(Model model) {
-        MapDto mapDto = mapService.getMapDto();
+        MapDto mapDto = covidMapService.getMapDto();
         List<Point> points = mapDto.getPoints();
         Double startLat = mapDto.getStartLat();
         Double startLon = mapDto.getStartLon();
@@ -49,13 +58,13 @@ public class MapController {
 
     @GetMapping("/map-europe")
     public String getEuropeMap() {
-        mapService.filterPointsEurope();
+        covidMapService.filterPointsEurope();
         return "redirect:/show-map";
     }
 
     @GetMapping("/get-map-by-country")
     public String getMapByCountry(@RequestParam String country) {
-        mapService.filterPointsByCountry(country);
+        covidMapService.filterPointsByCountry(country);
         return "redirect:/show-map";
     }
 

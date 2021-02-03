@@ -1,8 +1,6 @@
 package pl.pozadr.map.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import pl.pozadr.map.dto.MapDto;
 import pl.pozadr.map.model.Point;
@@ -13,14 +11,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class MapService {
+public class CovidMapService {
     private final CapitalsEuropeRepo capitalsEuropeRepo;
     private final MapDto mapDto;
     private final MapRepo mapRepository;
 
 
     @Autowired
-    public MapService(CapitalsEuropeRepo capitalsEuropeRepo, MapRepo mapRepository) {
+    public CovidMapService(CapitalsEuropeRepo capitalsEuropeRepo, MapRepo mapRepository) {
         this.capitalsEuropeRepo = capitalsEuropeRepo;
         this.mapRepository = mapRepository;
         this.mapDto = new MapDto();
