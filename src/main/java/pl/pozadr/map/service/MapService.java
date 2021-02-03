@@ -35,100 +35,50 @@ public class MapService {
         this.mapDto = new MapDto();
     }
 
-    public List<Point> getPoints() {
-        return mapDto.getPoints();
+    public MapDto getMapDto() {
+        return mapDto;
     }
 
     public void filterPointsByCountry(String country) {
-        Double startLat = 52.26077325101084;
-        Double startLon = 21.065969374131218;
-        Integer zoom = 4;
         String validatedCountry = validateCountry(country);
-
         List<Point> filteredPoints = remoteApiPoints.stream()
                 .filter(point -> point.getCountry().equalsIgnoreCase(validatedCountry))
                 .collect(Collectors.toList());
 
-        mapDto.setPoints(filteredPoints);
-        mapDto.setStartLat(startLat);
-        mapDto.setStartLon(startLon);
-        mapDto.setZoom(zoom);
+        setDto(filteredPoints);
     }
 
     public void filterPointsEurope() {
-        Double startLat = 52.26077325101084;
-        Double startLon = 21.065969374131218;
-        Integer zoom = 4;
         List<String> euCountries = capitalsEuropeRepo.getEuropeanCapitals();
-
         List<Point> filteredPoints = remoteApiPoints.stream()
                 .filter(point -> euCountries.stream()
                         .anyMatch(country -> country.equalsIgnoreCase(point.getCountry())))
                 .collect(Collectors.toList());
 
+        setDto(filteredPoints);
+    }
+
+    private void setDto(List<Point> filteredPoints) {
+        Double startLat = getAverageLat(filteredPoints);
+        Double startLon = getAverageLon(filteredPoints);
+        Integer zoom = 4;
+
         mapDto.setPoints(filteredPoints);
         mapDto.setStartLat(startLat);
         mapDto.setStartLon(startLon);
         mapDto.setZoom(zoom);
     }
 
-    @Scheduled(fixedDelay = 86400000) // 86400000 ms = 24 h
-    private void updateData() {
-        Optional<String> dataOpt = dataFetcher.getDataFromRemoteApi();
-        if (dataOpt.isPresent()) {
-            try {
-                List<Point> points = csvToBeanParser(dataOpt.get());
-                remoteApiPoints = filterData(points);
-
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                logger.info(LocalDateTime.now().format(formatter) + " | Data updated.");
-            } catch (IllegalStateException ex) {
-                System.out.println(ex.getMessage());
-            }
-        }
-
-        // TEST
-        /*
-        List<Point> common = getPointsEurope();
-
-        System.out.println("TEST");
-        System.out.println("points size: " + points.size());
-        System.out.println("common size: " + common.size());
-        common.forEach(point -> {
-            System.out.println(point.getCountry() + "\n");
-        });
-
-        points.forEach(point -> {
-            System.out.println(point.getCountry() + "\n");
-            System.out.println("Lat:" + point.getLat() + "\n");
-            System.out.println("Lon:" + point.getLon() + "\n");
-        });
-
-
-        points.forEach(point -> {
-            System.out.println(point.getDescription() + "\n");
-        });
-         */
+    private Double getAverageLat(List<Point> points) {
+        Double sumLat = points.stream().mapToDouble(Point::getLat).sum();
+        Integer sizeLat = points.size();
+        return sumLat / sizeLat;
     }
 
-    private List<Point> csvToBeanParser(String dataCsv) throws IllegalStateException {
-        StringReader reader = new StringReader(dataCsv);
-        CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
-                .withType(Point.class)
-                .withIgnoreLeadingWhiteSpace(true)
-                .build();
-        List<Point> points = csvToBean.parse();
-        reader.close();
-        return points;
-    }
-
-    private List<Point> filterData(List<Point> points) {
-        List<Point> pointsWithoutNullLenLon = points.stream()
-                .filter(point -> point.getLat() != null)
-                .filter(point -> point.getLon() != null)
-                .collect(Collectors.toList());
-        pointsWithoutNullLenLon.forEach(point -> point.setDescription(preparePointDescription(point)));
-        return pointsWithoutNullLenLon;
+    private Double getAverageLon(List<Point> points) {
+        Double sumLon = points.stream().mapToDouble(Point::getLon).sum();
+        Integer sizeLon = points.size();
+        return sumLon / sizeLon;
     }
 
     private String validateCountry(String country) {
@@ -138,7 +88,7 @@ public class MapService {
         return country;
     }
 
-    private String preparePointDescription(Point point) {
+    private String createPointDescription(Point point) {
         double incidentRate = (point.getIncidentRate() == null) ? 0.0
                 : Math.round(point.getIncidentRate() * 100.0) / 100.0;
         double caseFatalityRatio = (point.getCaseFatalityRatio() == null) ? 0.0
@@ -154,5 +104,45 @@ public class MapService {
         descriptionSb.append("Incident rate: ").append(incidentRate).append("<br>");
         descriptionSb.append("Case fatality ratio: ").append(caseFatalityRatio);
         return descriptionSb.toString();
+    }
+
+    private List<Point> parseCsvToBean(String dataCsv) throws IllegalStateException {
+        StringReader reader = new StringReader(dataCsv);
+        CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
+                .withType(Point.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        List<Point> points = csvToBean.parse();
+        reader.close();
+        return points;
+    }
+
+    private List<Point> filterData(List<Point> points) {
+        List<Point> pointsWithoutNullLenLon = points.stream()
+                .filter(point -> point.getLat() != null)
+                .filter(point -> point.getLon() != null)
+                .collect(Collectors.toList());
+        pointsWithoutNullLenLon.forEach(point -> point.setDescription(createPointDescription(point)));
+        return pointsWithoutNullLenLon;
+    }
+
+    @Scheduled(fixedDelay = 86400000) // 86400000 ms = 24 h
+    private void updateData() {
+        Optional<String> dataOpt = dataFetcher.getDataFromRemoteApi(1);
+        if (dataOpt.isEmpty()) {
+            dataOpt = dataFetcher.getDataFromRemoteApi(2);
+        }
+
+        if (dataOpt.isPresent()) {
+            try {
+                List<Point> points = parseCsvToBean(dataOpt.get());
+                remoteApiPoints = filterData(points);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                logger.info(LocalDateTime.now().format(formatter) + " | Data updated.");
+            } catch (IllegalStateException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
     }
 }
