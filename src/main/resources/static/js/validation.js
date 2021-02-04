@@ -9,7 +9,6 @@ function validateFilterByCountry() {
         $('#getByCountryMessage').hide();
         countryFilterByCountryError = false;
     }
-
     return !(countryFilterByCountryError);
 }
 
@@ -24,40 +23,7 @@ function validateGetHistory() {
         $('#getHistoryCountryMessage').hide();
         countryGetHistoryError = false;
     }
-
     return !(countryGetHistoryError);
-    /*
-    // from date
-    let fromFilterByDate = $('#fromDateFilterByDate').val();
-    if (fromFilterByDate.length === 0) {
-        $('#fromDateFilterByDateMessage').show();
-        fromFilterbyDateError = true;
-    } else if (!(isValidDate(fromFilterByDate))) {
-        $('#fromDateFilterByDateMessage').html
-        ("**should be date format: yyyy-mm-dd");
-        $('#fromDateFilterByDateMessage').css("color", "red");
-        fromFilterbyDateError = true;
-    } else {
-        $('#fromDateFilterByDateMessage').hide();
-        fromFilterbyDateError = false;
-    }
-    // to date
-    let toFilterByDate = $('#toDateFilterByDate').val();
-    if (toFilterByDate.length === 0) {
-        $('#toDateFilterByDateMessage').show();
-        toFilterbyDateError = true;
-    } else if (!(isValidDate(toFilterByDate))) {
-        $('#toDateFilterByDateMessage').html
-        ("**should be date format: yyyy-mm-dd");
-        $('#toDateFilterByDateMessage').css("color", "red");
-        toFilterbyDateError = true;
-    } else {
-        $('#toDateFilterByDateMessage').hide();
-        toFilterbyDateError = false;
-    }
-
-    return !(fromFilterbyDateError || toFilterbyDateError);
-     */
 }
 
 
@@ -72,7 +38,7 @@ $('#submitGetHistory').click(function () {
 });
 
 
-// #filterByCountryButton on click
+// filterByCountryButton on click
 $('#filterByCountryButton').click(function () {
     $('#getByCountryMessage').hide();
 });

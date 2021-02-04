@@ -10,15 +10,15 @@
     <title>Map</title>
 </head>
 <body>
-<div class="container">
+<div class="container" style="margin-left: 60px;">
     <h2>COVID-19 HISTORY: <span th:text="${country}"></span>  </h2>
 </div>
 
-<div class="container">
+<div class="container" style="margin-left: 60px;">
     <a class="btn btn-primary" th:href="@{/map-home}" th:method="get" href="#" role="button">Go to home page</a>
 </div>
 
-<div id="chart_div"></div>
+<div id="chart_div" style="margin-right: 20px; margin-left: 20px"></div>
 
 
 
@@ -59,22 +59,24 @@
         ]);
 
         var options = {
-            title: 'Motivation and Energy Level Throughout the Day',
+            title: 'Covid-19 statistics history',
+            titleTextStyle: {
+                color: 'black',
+                fontName: 'Helvetica',
+                fontSize: 24,
+                bold: true,
+                italic: false
+            },
             hAxis: {
-                title: 'Time of Day',
-                format: 'h:mm a',
-                viewWindow: {
-                    min: [7, 30, 0],
-                    max: [17, 30, 0]
-                }
+                title: 'Date [MM-dd-yyyy]',
             },
             vAxis: {
-                title: 'Rating (scale of 1-10)'
+                title: 'Number of people (confirmed / recovered / deaths)'
             },
-            //width: 700,
-            height: 800,
+            width: 1500,
+            height: 600,
         };
-        var chart = new google.visualization.ColumnChart(
+        var chart = new google.visualization.LineChart(
             document.getElementById('chart_div'));
 
         chart.draw(data, options);

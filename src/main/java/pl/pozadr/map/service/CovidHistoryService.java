@@ -5,8 +5,11 @@ import com.opencsv.exceptions.CsvValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import pl.pozadr.map.api.HistoricDataFetcher;
+import pl.pozadr.map.dto.HistoryChartDto;
 import pl.pozadr.map.model.CovidHistory;
 import pl.pozadr.map.reposiotry.map.MapRepo;
 
@@ -33,30 +36,68 @@ public class CovidHistoryService {
     }
 
 
-    public CovidHistory getHistory(String country) {
+    public Optional<HistoryChartDto> getHistoryChartDto(String country) {
+        HistoryChartDto historyChartDto = new HistoryChartDto();
+
+        Optional<CovidHistory> covidHistoryOpt = getCovidHistory(country);
+        if (covidHistoryOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        CovidHistory covidHistory = covidHistoryOpt.get();
+        Map<String, Long> confirmedHistory = covidHistory.getConfirmedHistory();
+        Map<String, Long> recoveredHistory = covidHistory.getRecoveredHistory();
+        Map<String, Long> deathsHistory = covidHistory.getDeathsHistory();
+        Set<String> dates = covidHistory.getConfirmedHistory().keySet();
+
+        List<List<Object>> googleChartsData = new LinkedList<>();
+        dates.forEach(date -> {
+            googleChartsData.add(List.of(date, confirmedHistory.get(date), recoveredHistory.get(date),
+                    deathsHistory.get(date)));
+        });
+
+        historyChartDto.setGoogleChartsData(googleChartsData);
+        historyChartDto.setCountry(covidHistory.getCountry());
+
+        return Optional.of(historyChartDto);
+    }
+
+    private Optional<CovidHistory> getCovidHistory(String country) {
         CovidHistory covidHistory = new CovidHistory();
-        covidHistory.setCountry(country.toUpperCase());
 
         Optional<String> deathsDataOpt = dataFetcher.getHistoricData(HISTORIC_DEATHS_DATA_URL);
         if (deathsDataOpt.isPresent()) {
-            Optional<Map<String, Long>> deathsMapOpt = parseCsvToBean(deathsDataOpt.get(), country);
-            deathsMapOpt.ifPresent(covidHistory::setDeathsHistory);
+            Map<String, Long> deathsMap = parseCsvToMap(deathsDataOpt.get(), country);
+            if (deathsMap.isEmpty()) {
+                return Optional.empty();
+            } else {
+                covidHistory.setDeathsHistory(deathsMap);
+            }
         }
         Optional<String> confirmedDataOpt = dataFetcher.getHistoricData(HISTORIC_CONFIRMED_DATA_URL);
         if (confirmedDataOpt.isPresent()) {
-            Optional<Map<String, Long>> confirmedMapOpt = parseCsvToBean(confirmedDataOpt.get(), country);
-            confirmedMapOpt.ifPresent(covidHistory::setConfirmedHistory);
+            Map<String, Long> confirmedMap = parseCsvToMap(confirmedDataOpt.get(), country);
+            if (confirmedMap.isEmpty()) {
+                return Optional.empty();
+            } else {
+                covidHistory.setConfirmedHistory(confirmedMap);
+            }
         }
         Optional<String> recoveredDataOpt = dataFetcher.getHistoricData(HISTORIC_RECOVERED_DATA_URL);
         if (recoveredDataOpt.isPresent()) {
-            Optional<Map<String, Long>> recoveredMapOpt = parseCsvToBean(recoveredDataOpt.get(), country);
-            recoveredMapOpt.ifPresent(covidHistory::setRecoveredHistory);
+            Map<String, Long> recoveredMap = parseCsvToMap(recoveredDataOpt.get(), country);
+            if (recoveredMap.isEmpty()) {
+                return Optional.empty();
+            } else {
+                covidHistory.setRecoveredHistory(recoveredMap);
+            }
         }
-
-        return covidHistory;
+        String countryUpperFirstLetter = country.substring(0, 1).toUpperCase() + country.substring(1);
+        covidHistory.setCountry(countryUpperFirstLetter);
+        return Optional.of(covidHistory);
     }
 
-    private Optional<Map<String, Long>> parseCsvToBean(String dataCsv, String country) throws IllegalStateException {
+    private Map<String, Long> parseCsvToMap(String dataCsv, String country) {
+        Map<String, Long> data = new LinkedHashMap<>();
         try {
             Reader reader = new StringReader(dataCsv);
             CSVReader csvReader = new CSVReader(reader);
@@ -65,9 +106,8 @@ public class CovidHistoryService {
             record = csvReader.readNext();
             List<String> dates = new LinkedList<>(Arrays.asList(record).subList(4, record.length));
 
-            Map<String, Long> data = new LinkedHashMap<>();
             while ((record = csvReader.readNext()) != null) {
-                if (record[1].equals(country)) {
+                if (record[1].equalsIgnoreCase(country)) {
                     for (int i = 4; i < record.length; i++) {
                         data.put(dates.get(i - 4), Long.parseLong(record[i]));
                     }
@@ -76,7 +116,6 @@ public class CovidHistoryService {
             }
             csvReader.close();
             reader.close();
-            return Optional.of(data);
         } catch (IOException ex) {
             logger.error("Error: IOException.");
             ex.printStackTrace();
@@ -84,8 +123,6 @@ public class CovidHistoryService {
             logger.error("Error: CsvValidationException.");
             e.printStackTrace();
         }
-        return Optional.empty();
+        return data;
     }
-
-
 }

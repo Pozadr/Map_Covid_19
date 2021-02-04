@@ -44,7 +44,7 @@ public class DataFetcherImpl implements DataFetcher, HistoricDataFetcher {
             logger.error("Error during building URL.", exUrl);
         } catch (RestClientException exRestClient) {
             exRestClient.getMessage();
-            logger.error("Error during fetching data from remote API.");
+            logger.error("Error during fetching data from remote API.\n Url: {}", urlString);
         }
         return Optional.empty();
     }
