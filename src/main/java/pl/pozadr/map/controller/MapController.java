@@ -13,6 +13,7 @@ import pl.pozadr.map.service.CovidHistoryService;
 import pl.pozadr.map.service.CovidMapService;
 
 import java.util.List;
+import java.util.Random;
 
 @Controller
 public class MapController {
@@ -34,10 +35,33 @@ public class MapController {
         return getEuropeMap();
     }
 
-    //@EventListener(ApplicationReadyEvent.class)
-    public void getHistory() {
-        CovidHistory covidHistory = covidHistoryService.getHistory("Poland");
-        System.out.println(covidHistory.toString());
+    @GetMapping("/map-home")
+    public String getHomePage() {
+        return getEuropeMap();
+    }
+
+    @GetMapping("/get-history")
+    public String getHistory(Model model, @RequestParam String country) {
+        CovidHistory covidHistory = covidHistoryService.getHistory(country);
+        model.addAttribute("country", covidHistory.getCountry());
+        model.addAttribute("confirmed", covidHistory.getConfirmedHistory());
+        model.addAttribute("recovered", covidHistory.getRecoveredHistory());
+        model.addAttribute("deaths", covidHistory.getDeathsHistory());
+
+
+        Random RANDOM = new Random(System.currentTimeMillis());
+        List<List<Object>> list = List.of(
+                List.of("1/29/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000)),
+                List.of("1/30/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000)),
+                List.of("1/31/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000)),
+                List.of("2/1/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000)),
+                List.of("2/2/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000)),
+                List.of("2/3/21", RANDOM.nextInt(2000), RANDOM.nextInt(2000), RANDOM.nextInt(2000))
+
+        );
+
+        model.addAttribute("chartData", list);
+        return "history";
     }
 
     @GetMapping("/show-map")

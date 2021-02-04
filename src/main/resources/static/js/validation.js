@@ -1,7 +1,6 @@
 // validate filter by Country
 let countryFilterByCountryError;
 function validateFilterByCountry() {
-    // from date
     let getByCountry = $('#getByCountry').val();
     if (getByCountry.length === 0) {
         $('#getByCountryMessage').show();
@@ -15,9 +14,19 @@ function validateFilterByCountry() {
 }
 
 // validate getHistory
-let fromFilterByDateError;
-let toFilterByDateError;
+let countryGetHistoryError;
 function validateGetHistory() {
+    let getHistory = $('#getHistory').val();
+    if (getHistory.length === 0) {
+        $('#getHistoryCountryMessage').show();
+        countryGetHistoryError = true;
+    } else {
+        $('#getHistoryCountryMessage').hide();
+        countryGetHistoryError = false;
+    }
+
+    return !(countryGetHistoryError);
+    /*
     // from date
     let fromFilterByDate = $('#fromDateFilterByDate').val();
     if (fromFilterByDate.length === 0) {
@@ -48,6 +57,7 @@ function validateGetHistory() {
     }
 
     return !(fromFilterbyDateError || toFilterbyDateError);
+     */
 }
 
 

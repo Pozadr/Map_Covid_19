@@ -35,7 +35,7 @@ public class CovidHistoryService {
 
     public CovidHistory getHistory(String country) {
         CovidHistory covidHistory = new CovidHistory();
-        covidHistory.setCountry(country);
+        covidHistory.setCountry(country.toUpperCase());
 
         Optional<String> deathsDataOpt = dataFetcher.getHistoricData(HISTORIC_DEATHS_DATA_URL);
         if (deathsDataOpt.isPresent()) {

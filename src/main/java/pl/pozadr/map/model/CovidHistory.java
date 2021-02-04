@@ -11,9 +11,12 @@ public class CovidHistory {
     public CovidHistory() {
     }
 
-    public CovidHistory(String country, Map<String, Long> deathsHistory) {
+    public CovidHistory(String country, Map<String, Long> deathsHistory, Map<String, Long> confirmedHistory,
+                        Map<String, Long> recoveredHistory) {
         this.country = country;
         this.deathsHistory = deathsHistory;
+        this.confirmedHistory = confirmedHistory;
+        this.recoveredHistory = recoveredHistory;
     }
 
     public String getCountry() {
