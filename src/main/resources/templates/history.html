@@ -9,18 +9,24 @@
 
     <title>Map</title>
 </head>
-<body>
-<div class="container" style="margin-left: 60px;">
+<body style="font-family: Helvetica, serif;">
+<div class="container ml-5 px-0">
     <h2>COVID-19 HISTORY: <span th:text="${country}"></span></h2>
 </div>
 
-<div class="container" style="margin-left: 60px; margin-bottom: 10px">
+<div class="container ml-5 px-0">
     <a class="btn btn-primary" th:href="@{/map-home}" th:method="get" href="#" role="button">Go to home page</a>
 </div>
 
-<div id="chart_div" style="margin-right: 20px; margin-left: 20px"></div>
+<div class="mx-1" id="chart_div"></div>
 
-
+<footer class="page-footer pt-1" style="font-size: 0.8rem">
+    <!-- Copyright -->
+    <div class="footer-copyright text-center">© 2021 Copyright:
+        <a href="https://github.com/Pozadr" target="_blank">Pozadr</a>
+    </div>
+    <!-- Copyright -->
+</footer>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js"
         integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="

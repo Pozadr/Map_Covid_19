@@ -13,12 +13,12 @@
     <title>Map</title>
 </head>
 
-<body style="font-family: Helvetica,serif;">
-<div class="container" style="margin-left: 35px;">
+<body style="font-family: Helvetica, serif;">
+<div class="container ml-5 px-0">
     <h2>COVID-19 MAP</h2>
 </div>
 
-<div class="container" style=" margin-left: 35px;">
+<div class="container ml-5 px-0">
     <a class="btn btn-primary" th:href="@{/get-map-europe}" th:method="get" href="#" role="button">Filter Europe</a>
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#filterByCountryModal"
             id="filterByCountryButton">
@@ -33,13 +33,20 @@
         About
     </button>
     <div th:switch="${notFoundMsg}">
-        <p th:case="true" style="color: red; margin-bottom: 10px">Country not found. Try again.</p>
-        <p th:case="*" style="margin-bottom: 10px"></p>
+        <p class="mb-2" th:case="true" style="color: red">Country not found. Try again.</p>
+        <p class="mb-2" th:case="*"></p>
     </div>
 </div>
 
-<div id="mapid" style="height: 600px; margin-right: 50px; margin-left: 50px"></div>
+<div class="mx-5" id="mapid" style="height: 600px;"></div>
 
+<footer class="page-footer pt-2" style="font-size: 0.8rem">
+    <!-- Copyright -->
+    <div class="footer-copyright text-center">© 2021 Copyright:
+        <a href="https://github.com/Pozadr" target="_blank">Pozadr</a>
+    </div>
+    <!-- Copyright -->
+</footer>
 <!-- MODAL: About app  -->
 <div class="modal fade" id="aboutApplication" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
      aria-hidden="true">
@@ -53,11 +60,30 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="text">
-                        About application body.
+                    <div class="text" style="text-align: justify; text-justify: inter-word;">
+                        Visualisation of COVID-19 data from
                         <a href="https://github.com/CSSEGISandData/COVID-19" target="_blank">
-                            Data
-                        </a>
+                        Johns Hopkins University.</a>
+                        The data is updated automatically every day as data for the&nbsp;previous day.
+                        If Johns Hopkins University has not updated the&nbsp;previous day's data, then the data taken two
+                        days ago is&nbsp;downloaded. User can show  statistic of a&nbsp;country or all European countries on
+                        a map. There is also a feature to visualise historical data on a&nbsp;chart. The application uses
+                        <a href="https://account.mapbox.com" target="_blank">
+                            Mapbox service</a> to display the map.
+                        Use the <a href="https://leafletjs.com" target="_blank">
+                        Leaflet</a> to add markers with a&nbsp;description on the&nbsp;map.
+                        <a href="https://developers.google.com/chart/" target="_blank">
+                            Google charts.</a> were used to draw a&nbsp;graph from the&nbsp;downloaded data.
+                        <br>
+                        <br>
+                        <footer class="footer">
+                            <!-- Copyright -->
+                            <div class="footer-copyright" style="font-size: 0.8rem">
+                                Check my other projects on
+                                <a href="https://github.com/Pozadr" target="_blank"> Github/Pozadr.</a>
+                            </div>
+                            <!-- Copyright -->
+                        </footer>
                     </div>
                 </div>
                 <div class="modal-footer">
