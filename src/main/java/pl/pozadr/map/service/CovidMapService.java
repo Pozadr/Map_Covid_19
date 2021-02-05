@@ -7,6 +7,7 @@ import pl.pozadr.map.model.Point;
 import pl.pozadr.map.reposiotry.euCapitals.CapitalsEuropeRepo;
 import pl.pozadr.map.reposiotry.map.MapRepo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,13 +30,22 @@ public class CovidMapService {
         return mapDto;
     }
 
-    public void filterPointsByCountry(String country) {
+    public void setNotFoundMapDto() {
+        mapDto.setStartLat(52.2297700);
+        mapDto.setStartLon(21.0117800);
+        mapDto.setZoom(4);
+        mapDto.setNotFoundMsg(true);
+        mapDto.setPoints(new ArrayList<>());
+    }
+
+    public boolean filterPointsByCountry(String country) {
         String validatedCountry = validateCountry(country);
         List<Point> filteredPoints = mapRepository.getMapPoints().stream()
                 .filter(point -> point.getCountry().equalsIgnoreCase(validatedCountry))
                 .collect(Collectors.toList());
 
-        setDto(filteredPoints);
+        setMapDto(filteredPoints);
+        return  !filteredPoints.isEmpty();
     }
 
     public void filterPointsEurope() {
@@ -45,10 +55,10 @@ public class CovidMapService {
                         .anyMatch(country -> country.equalsIgnoreCase(point.getCountry())))
                 .collect(Collectors.toList());
 
-        setDto(filteredPoints);
+        setMapDto(filteredPoints);
     }
 
-    private void setDto(List<Point> filteredPoints) {
+    private void setMapDto(List<Point> filteredPoints) {
         Double startLat = getAverageLat(filteredPoints);
         Double startLon = getAverageLon(filteredPoints);
         Integer zoom = 4;
@@ -57,6 +67,7 @@ public class CovidMapService {
         mapDto.setStartLat(startLat);
         mapDto.setStartLon(startLon);
         mapDto.setZoom(zoom);
+        mapDto.setNotFoundMsg(false);
     }
 
     private Double getAverageLat(List<Point> points) {

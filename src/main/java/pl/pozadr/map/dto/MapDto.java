@@ -9,15 +9,17 @@ public class MapDto {
     private Double startLon;
     private Integer zoom;
     private List<Point> points;
+    private boolean notFoundMsg;
 
     public MapDto() {
     }
 
-    public MapDto(Double startLat, Double startLon, Integer zoom, List<Point> points) {
+    public MapDto(Double startLat, Double startLon, Integer zoom, List<Point> points, boolean notFoundMsg) {
         this.startLat = startLat;
         this.startLon = startLon;
         this.zoom = zoom;
         this.points = points;
+        this.notFoundMsg = notFoundMsg;
     }
 
     public Double getStartLat() {
@@ -52,6 +54,14 @@ public class MapDto {
         this.points = points;
     }
 
+    public boolean isNotFoundMsg() {
+        return notFoundMsg;
+    }
+
+    public void setNotFoundMsg(boolean notFoundMsg) {
+        this.notFoundMsg = notFoundMsg;
+    }
+
     @Override
     public String toString() {
         return "MapDto{" +
@@ -59,6 +69,7 @@ public class MapDto {
                 ", startLon=" + startLon +
                 ", zoom=" + zoom +
                 ", points=" + points +
+                ", notFoundMsg=" + notFoundMsg +
                 '}';
     }
 }
