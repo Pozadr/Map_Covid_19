@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Contains list of european capitals. Based on enum CapitalEU.
+ */
 @Repository
 public class CapitalsEuropeRepoImpl implements CapitalsEuropeRepo {
     private final List<CapitalEU> europeanCapitals;

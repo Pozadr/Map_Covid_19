@@ -17,32 +17,57 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Contains map data filtered after being fetched from remote API.
+ */
 @Repository
 public class MapRepoImpl implements MapRepo {
     Logger logger = LoggerFactory.getLogger(MapRepoImpl.class);
     private List<Point> mapPoints;
     private final DataFetcher dataFetcher;
 
+
     @Autowired
     public MapRepoImpl(DataFetcher dataFetcher) {
         this.dataFetcher = dataFetcher;
     }
 
+
+    /**
+     * @return list of filtered points ready to display by controller.
+     */
     @Override
     public List<Point> getMapPoints() {
         return mapPoints;
     }
 
-
+    /**
+     * Filters data fetched from remote API.
+     * @param points - list of points
+     * @return - filtered list of Point(model).
+     */
     private List<Point> filterData(List<Point> points) {
         List<Point> pointsWithoutNullLenLon = points.stream()
                 .filter(point -> point.getLat() != null)
                 .filter(point -> point.getLon() != null)
                 .collect(Collectors.toList());
-        pointsWithoutNullLenLon.forEach(point -> point.setDescription(createPointDescription(point)));
+        setPointsDescription(pointsWithoutNullLenLon);
         return pointsWithoutNullLenLon;
     }
 
+    /**
+     * Sets a description for all points in the list.
+     * @param points - list of points to edit
+     */
+    private void setPointsDescription (List<Point> points) {
+       points.forEach(point -> point.setDescription(createPointDescription(point)));
+    }
+
+    /**
+     * Prepares Point(model) description field.
+     * @param point - model to edit.
+     * @return - description - field of Point(model).
+     */
     private String createPointDescription(Point point) {
         double incidentRate = (point.getIncidentRate() == null) ? 0.0
                 : Math.round(point.getIncidentRate() * 100.0) / 100.0;
@@ -61,6 +86,12 @@ public class MapRepoImpl implements MapRepo {
         return descriptionSb.toString();
     }
 
+    /**
+     * Parses data from .csv file to model - Point.
+     * @param dataCsv - input data as String from .csv file.
+     * @return - List of Point(model).
+     * @throws IllegalStateException - if it is impossible to determine a mapping strategy.
+     */
     private List<Point> parseCsvToBean(String dataCsv) throws IllegalStateException {
         StringReader reader = new StringReader(dataCsv);
         CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
@@ -72,6 +103,9 @@ public class MapRepoImpl implements MapRepo {
         return points;
     }
 
+    /**
+     * Every 24h fetches data from remote API.
+     */
     @Scheduled(fixedDelay = 86400000) // 86400000 ms = 24 h
     private void updateData() {
         Optional<String> dataOpt = dataFetcher.getDataFromRemoteApi(1);

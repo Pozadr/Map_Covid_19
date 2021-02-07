@@ -4,6 +4,9 @@ import pl.pozadr.map.model.Point;
 
 import java.util.List;
 
+/**
+ * Data transfer object. Contains data about points visualized by the Controller on the map.
+ */
 public class MapDto {
     private Double startLat;
     private Double startLon;

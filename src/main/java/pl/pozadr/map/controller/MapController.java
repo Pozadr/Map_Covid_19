@@ -15,6 +15,9 @@ import pl.pozadr.map.service.CovidMapService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Takes user input and displays a response from the application API.
+ */
 @Controller
 public class MapController {
 

@@ -15,6 +15,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
 
+/**
+ * Communicates with the dataFetcher and prepares the data used by the Controller.
+ */
 @Service
 public class CovidHistoryServiceImpl implements CovidHistoryService {
     Logger logger = LoggerFactory.getLogger(CovidHistoryServiceImpl.class);
@@ -32,6 +35,13 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
         this.dataFetcher = dataFetcher;
     }
 
+
+    /**
+     * Prepares a HistoryChartDto(DTO) with the data format required by Google Charts used on frontend of the application.
+     * @param country - parameter used to filter data by country.
+     * @return - an Optional with the data as a HistoryChartDto(DTO) if the specified value is non-null,
+     *           otherwise an empty Optional.
+     */
     @Override
     public Optional<HistoryChartDto> getHistoryChartDto(String country) {
         HistoryChartDto historyChartDto = new HistoryChartDto();
@@ -58,6 +68,12 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
         return Optional.of(historyChartDto);
     }
 
+    /**
+     * Prepares a CovidHistory(model) using dataFetcher to be retrieved from a remote API.
+     * @param country - parameter used to filter data by country.
+     * @return - an Optional with the data as a CovidHistory(model) if the specified value is non-null,
+     *           otherwise an empty Optional.
+     */
     private Optional<CovidHistory> getCovidHistory(String country) {
         CovidHistory covidHistory = new CovidHistory();
 
@@ -93,6 +109,12 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
         return Optional.of(covidHistory);
     }
 
+    /**
+     * Parse data from .csv file to Map<String, Long> used in CovidHistory(model).
+     * @param dataCsv - input data as String from .csv file.
+     * @param country - parameter used to filter data by country.
+     * @return - Map<String, Long>, which is the field of CovidHistory(model).
+     */
     private Map<String, Long> parseCsvToMap(String dataCsv, String country) {
         Map<String, Long> data = new LinkedHashMap<>();
         try {
