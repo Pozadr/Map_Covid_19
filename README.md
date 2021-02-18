@@ -9,8 +9,10 @@ historical data on a chart. The application uses [Mapbox service](https://accoun
 [Leaflet](https://leafletjs.com) to add markers with a description on the map.
 [Google charts.](https://developers.google.com/chart/) were used to draw a graph from the downloaded data.
 
+### Demo
+https://covid-19-map-app.herokuapp.com/map
 
-#### Endpoint to run application
+### Endpoint to run application locally
     localhost:8080/map
 
 ## Configuration
