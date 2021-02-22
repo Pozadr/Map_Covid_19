@@ -1,4 +1,4 @@
-package pl.pozadr.map.api;
+package pl.pozadr.map.remotedata;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,7 @@ public class DataFetcherImpl implements DataFetcher, HistoricDataFetcher {
 
     /**
      * Return Optional which should contain daily data fetched from the remote API.
+     *
      * @param daysBack - number of days in past.
      * @return an Optional with the data as a String if the specified value is non-null, otherwise an empty Optional.
      */
@@ -44,6 +45,7 @@ public class DataFetcherImpl implements DataFetcher, HistoricDataFetcher {
 
     /**
      * Return Optional which should contain historical data fetched from the remote API.
+     *
      * @param urlString - URL for historical data.
      * @return an Optional with the data as a String if the specified value is non-null, otherwise an empty Optional.
      */
@@ -91,7 +93,3 @@ public class DataFetcherImpl implements DataFetcher, HistoricDataFetcher {
         return dataOpt;
     }
 }
-
-
-
-

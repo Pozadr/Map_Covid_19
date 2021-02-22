@@ -1,4 +1,4 @@
-package pl.pozadr.map.service;
+package pl.pozadr.map.service.covidmap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,7 +58,7 @@ public class CovidMapServiceImpl implements CovidMapService {
      */
     @Override
     public boolean filterPointsByCountry(String country) {
-        String validatedCountry = validateCountry(country);
+        String validatedCountry = Validator.validateCountry(country);
         List<Point> filteredPoints = mapRepository.getMapPoints().stream()
                 .filter(point -> point.getCountry().equalsIgnoreCase(validatedCountry))
                 .collect(Collectors.toList());
@@ -121,22 +121,6 @@ public class CovidMapServiceImpl implements CovidMapService {
         Double sumLon = points.stream().mapToDouble(Point::getLon).sum();
         Integer sizeLon = points.size();
         return sumLon / sizeLon;
-    }
-
-    /**
-     * Validates input country variable from controller.
-     *
-     * @param country - parameter to validate.
-     * @return - validated result.
-     */
-    private String validateCountry(String country) {
-        if (country.equalsIgnoreCase("United States")) {
-            return "us";
-        } else if (country.equalsIgnoreCase("uk")) {
-            return "United Kingdom";
-        }
-
-        return country;
     }
 
 }
