@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import pl.pozadr.map.remotedata.HistoricDataFetcher;
 import pl.pozadr.map.dto.HistoryChartDto;
 import pl.pozadr.map.model.CovidHistory;
+import pl.pozadr.map.service.CountryValidator;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -40,8 +41,9 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
     @Override
     public Optional<HistoryChartDto> getHistoryChartDto(String country) {
         HistoryChartDto historyChartDto = new HistoryChartDto();
+        String validatedCountry = CountryValidator.validateCountry(country);
 
-        Optional<CovidHistory> covidHistoryOpt = getCovidHistory(country);
+        Optional<CovidHistory> covidHistoryOpt = getCovidHistory(validatedCountry);
         if (covidHistoryOpt.isEmpty()) {
             return Optional.empty();
         }

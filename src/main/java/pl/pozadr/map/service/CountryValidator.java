@@ -1,12 +1,12 @@
-package pl.pozadr.map.service.covidmap;
+package pl.pozadr.map.service;
 
 /**
  * Validators for CovidMapService.
  * It can't be instantiated because of a private constructor.
  */
-public class Validator {
+public class CountryValidator {
 
-    private Validator() {
+    private CountryValidator() {
     }
 
     /**
@@ -15,7 +15,7 @@ public class Validator {
      * @param country - parameter to validate.
      * @return - validated result.
      */
-    static String validateCountry(String country) {
+    public static String validateCountry(String country) {
         if (country.equalsIgnoreCase("United States")) {
             return "us";
         } else if (country.equalsIgnoreCase("uk")) {
