@@ -1,4 +1,4 @@
-package pl.pozadr.map.service;
+package pl.pozadr.map.service.covidmap;
 
 import pl.pozadr.map.dto.MapDto;
 

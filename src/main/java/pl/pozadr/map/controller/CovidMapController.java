@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import pl.pozadr.map.dto.HistoryChartDto;
 import pl.pozadr.map.dto.MapDto;
 import pl.pozadr.map.model.Point;
-import pl.pozadr.map.service.CovidHistoryService;
-import pl.pozadr.map.service.CovidMapService;
+import pl.pozadr.map.service.history.CovidHistoryService;
+import pl.pozadr.map.service.covidmap.CovidMapService;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import java.util.Optional;
  * Takes user input and displays a response from the application API.
  */
 @Controller
-public class MapController {
+public class CovidMapController {
 
     @Value("${api-token}")
     private String apiToken;
@@ -27,7 +27,7 @@ public class MapController {
     private final CovidHistoryService covidHistoryService;
 
     @Autowired
-    public MapController(CovidMapService covidMapService, CovidHistoryService covidHistoryService) {
+    public CovidMapController(CovidMapService covidMapService, CovidHistoryService covidHistoryService) {
         this.covidMapService = covidMapService;
         this.covidHistoryService = covidHistoryService;
     }

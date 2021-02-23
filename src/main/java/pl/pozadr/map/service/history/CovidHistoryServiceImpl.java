@@ -1,4 +1,4 @@
-package pl.pozadr.map.service;
+package pl.pozadr.map.service.history;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -6,9 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.pozadr.map.api.HistoricDataFetcher;
+import pl.pozadr.map.remotedata.HistoricDataFetcher;
 import pl.pozadr.map.dto.HistoryChartDto;
 import pl.pozadr.map.model.CovidHistory;
+import pl.pozadr.map.service.CountryValidator;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -22,12 +23,6 @@ import java.util.*;
 public class CovidHistoryServiceImpl implements CovidHistoryService {
     Logger logger = LoggerFactory.getLogger(CovidHistoryServiceImpl.class);
     private final HistoricDataFetcher dataFetcher;
-    private static final String HISTORIC_DEATHS_DATA_URL =
-            "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv";
-    private static final String HISTORIC_CONFIRMED_DATA_URL =
-            "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
-    private static final String HISTORIC_RECOVERED_DATA_URL =
-            "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv";
 
 
     @Autowired
@@ -38,15 +33,17 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
 
     /**
      * Prepares a HistoryChartDto(DTO) with the data format required by Google Charts used on frontend of the application.
+     *
      * @param country - parameter used to filter data by country.
      * @return - an Optional with the data as a HistoryChartDto(DTO) if the specified value is non-null,
-     *           otherwise an empty Optional.
+     * otherwise an empty Optional.
      */
     @Override
     public Optional<HistoryChartDto> getHistoryChartDto(String country) {
         HistoryChartDto historyChartDto = new HistoryChartDto();
+        String validatedCountry = CountryValidator.validateCountry(country);
 
-        Optional<CovidHistory> covidHistoryOpt = getCovidHistory(country);
+        Optional<CovidHistory> covidHistoryOpt = getCovidHistory(validatedCountry);
         if (covidHistoryOpt.isEmpty()) {
             return Optional.empty();
         }
@@ -69,15 +66,17 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
     }
 
     /**
-     * Prepares a CovidHistory(model) using dataFetcher to be retrieved from a remote API.
+     * Prepares a CovidHistory model. Uses dataFetcher to retrieve data from a remote API.
+     * Uses parseCsvToMap to filter data.
+     *
      * @param country - parameter used to filter data by country.
      * @return - an Optional with the data as a CovidHistory(model) if the specified value is non-null,
-     *           otherwise an empty Optional.
+     * otherwise an empty Optional.
      */
     private Optional<CovidHistory> getCovidHistory(String country) {
         CovidHistory covidHistory = new CovidHistory();
 
-        Optional<String> deathsDataOpt = dataFetcher.getHistoricData(HISTORIC_DEATHS_DATA_URL);
+        Optional<String> deathsDataOpt = dataFetcher.getHistoricData(CovidHistoryConstants.HISTORIC_DEATHS_DATA_URL);
         if (deathsDataOpt.isPresent()) {
             Map<String, Long> deathsMap = parseCsvToMap(deathsDataOpt.get(), country);
             if (deathsMap.isEmpty()) {
@@ -86,7 +85,7 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
                 covidHistory.setDeathsHistory(deathsMap);
             }
         }
-        Optional<String> confirmedDataOpt = dataFetcher.getHistoricData(HISTORIC_CONFIRMED_DATA_URL);
+        Optional<String> confirmedDataOpt = dataFetcher.getHistoricData(CovidHistoryConstants.HISTORIC_CONFIRMED_DATA_URL);
         if (confirmedDataOpt.isPresent()) {
             Map<String, Long> confirmedMap = parseCsvToMap(confirmedDataOpt.get(), country);
             if (confirmedMap.isEmpty()) {
@@ -95,7 +94,7 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
                 covidHistory.setConfirmedHistory(confirmedMap);
             }
         }
-        Optional<String> recoveredDataOpt = dataFetcher.getHistoricData(HISTORIC_RECOVERED_DATA_URL);
+        Optional<String> recoveredDataOpt = dataFetcher.getHistoricData(CovidHistoryConstants.HISTORIC_RECOVERED_DATA_URL);
         if (recoveredDataOpt.isPresent()) {
             Map<String, Long> recoveredMap = parseCsvToMap(recoveredDataOpt.get(), country);
             if (recoveredMap.isEmpty()) {
@@ -111,6 +110,7 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
 
     /**
      * Parse data from .csv file to Map<String, Long> used in CovidHistory(model).
+     *
      * @param dataCsv - input data as String from .csv file.
      * @param country - parameter used to filter data by country.
      * @return - Map<String, Long>, which is the field of CovidHistory(model).
