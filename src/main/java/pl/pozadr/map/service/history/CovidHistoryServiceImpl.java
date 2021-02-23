@@ -64,7 +64,8 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
     }
 
     /**
-     * Prepares a CovidHistory(model) using dataFetcher to be retrieved from a remote API.
+     * Prepares a CovidHistory model. Uses dataFetcher to retrieve data from a remote API.
+     * Uses parseCsvToMap to filter data.
      *
      * @param country - parameter used to filter data by country.
      * @return - an Optional with the data as a CovidHistory(model) if the specified value is non-null,

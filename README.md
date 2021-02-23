@@ -26,6 +26,7 @@ application.properties file:
 - Maven
 - Spring Boot 2.4.0
 - Thymeleaf
+- Swagger 2
 - Bootstrap(CSS)
 - JQuery/JavaScript
 - Leaflet
