@@ -93,14 +93,13 @@ public class MapRepoImpl implements MapRepo {
      * @throws IllegalStateException - if it is impossible to determine a mapping strategy.
      */
     private List<Point> parseCsvToBean(String dataCsv) throws IllegalStateException {
-        StringReader reader = new StringReader(dataCsv);
-        CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
-                .withType(Point.class)
-                .withIgnoreLeadingWhiteSpace(true)
-                .build();
-        List<Point> points = csvToBean.parse();
-        reader.close();
-        return points;
+        try(StringReader reader = new StringReader(dataCsv)) {
+            CsvToBean<Point> csvToBean = new CsvToBeanBuilder<Point>(reader)
+                    .withType(Point.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+            return csvToBean.parse();
+        }
     }
 
     /**
