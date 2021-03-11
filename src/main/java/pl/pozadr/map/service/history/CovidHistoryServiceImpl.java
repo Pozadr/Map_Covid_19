@@ -54,10 +54,9 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
         Set<String> dates = covidHistory.getConfirmedHistory().keySet();
 
         List<List<Object>> googleChartsData = new LinkedList<>();
-        dates.forEach(date -> {
-            googleChartsData.add(List.of(date, confirmedHistory.get(date), recoveredHistory.get(date),
-                    deathsHistory.get(date)));
-        });
+        dates.forEach(date -> googleChartsData.add(List.of(date, confirmedHistory.get(date), recoveredHistory.get(date),
+                deathsHistory.get(date)))
+        );
 
         historyChartDto.setGoogleChartsData(googleChartsData);
         historyChartDto.setCountry(covidHistory.getCountry());
@@ -117,30 +116,30 @@ public class CovidHistoryServiceImpl implements CovidHistoryService {
      */
     private Map<String, Long> parseCsvToMap(String dataCsv, String country) {
         Map<String, Long> data = new LinkedHashMap<>();
-        try {
-            Reader reader = new StringReader(dataCsv);
-            CSVReader csvReader = new CSVReader(reader);
-
-            String[] record;
-            record = csvReader.readNext();
-            List<String> dates = new LinkedList<>(Arrays.asList(record).subList(4, record.length));
-
-            while ((record = csvReader.readNext()) != null) {
-                if (record[1].equalsIgnoreCase(country)) {
-                    for (int i = 4; i < record.length; i++) {
-                        data.put(dates.get(i - 4), Long.parseLong(record[i]));
+        try (Reader reader = new StringReader(dataCsv)) {
+            try (CSVReader csvReader = new CSVReader(reader)) {
+                String[] record;
+                record = csvReader.readNext();
+                List<String> dates = new LinkedList<>(Arrays.asList(record).subList(4, record.length));
+                csvReader.close();
+                while ((record = csvReader.readNext()) != null) {
+                    if (record[1].equalsIgnoreCase(country)) {
+                        for (int i = 4; i < record.length; i++) {
+                            data.put(dates.get(i - 4), Long.parseLong(record[i]));
+                        }
+                        break;
                     }
-                    break;
                 }
+            } catch (IOException ex) {
+                logger.error("Error: IOException CSVReader. {}", ex.getMessage());
+                ex.printStackTrace();
+            } catch (CsvValidationException e) {
+                logger.error("Error: CsvValidationException. {}", e.getMessage());
+                e.printStackTrace();
             }
-            csvReader.close();
-            reader.close();
         } catch (IOException ex) {
-            logger.error("Error: IOException. {}", ex.getMessage());
+            logger.error("Error: IOException StringReader. {}", ex.getMessage());
             ex.printStackTrace();
-        } catch (CsvValidationException e) {
-            logger.error("Error: CsvValidationException. {}", e.getMessage());
-            e.printStackTrace();
         }
         return data;
     }
